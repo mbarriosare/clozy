@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Silueta genérica de prenda; se tiñe por código según el color de cada prenda.
+     PROVISIONAL: en Figma cada prenda tiene su propia ilustración. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp" android:height="64dp" android:viewportWidth="64" android:viewportHeight="64">
+    <path android:fillColor="#FF000000"
+        android:pathData="M24,6 L28,10 L36,10 L40,6 L52,14 L46,24 L40,20 L40,58 L24,58 L24,20 L18,24 L12,14 Z"/>
+</vector>

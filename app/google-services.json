@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "870432184663",
+    "project_id": "clozzyapp-23fa5",
+    "storage_bucket": "clozzyapp-23fa5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:870432184663:android:86b2734df879301e90c612",
+        "android_client_info": {
+          "package_name": "com.clozy.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "870432184663-73p2s2jici6agbjdla6bl5adb19aohv0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clozy.app",
+            "certificate_hash": "b5807dd6b174534e9625d2d19083927c710fbf1a"
+          }
+        },
+        {
+          "client_id": "870432184663-cagt3s8gl8tp9oqq16l5kp12oioplapo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRtHYgfku_xYNBhLN0K5nQnanBVlnOl5Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "870432184663-cagt3s8gl8tp9oqq16l5kp12oioplapo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
