@@ -58,7 +58,7 @@ private fun StyleChip(label: String, selected: Boolean, onClick: () -> Unit) {
         style = ClozyType.Button,
         color = if (selected) ClozyColors.White else ClozyColors.TextMuted,
         modifier = Modifier
-            .background(if (selected) ClozyColors.Primary else ClozyColors.White, CircleShape)
+            .background(if (selected) ClozyColors.Primary else ClozyColors.Surface, CircleShape)
             .border(1.dp, if (selected) ClozyColors.Primary else ClozyColors.TextFaint, CircleShape)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -86,7 +86,7 @@ private fun SizeChip(label: String, selected: Boolean, onClick: () -> Unit) {
         style = ClozyType.CaptionBold,
         color = if (selected) ClozyColors.White else ClozyColors.TextMuted,
         modifier = Modifier
-            .background(if (selected) ClozyColors.Primary else ClozyColors.White, RoundedCornerShape(12.dp))
+            .background(if (selected) ClozyColors.Primary else ClozyColors.Surface, RoundedCornerShape(12.dp))
             .border(1.dp, if (selected) ClozyColors.Primary else ClozyColors.TextFaint, RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 6.dp),

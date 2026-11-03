@@ -48,7 +48,7 @@ fun ClozyBottomNav(selected: String, onNavClick: (String) -> Unit, modifier: Mod
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(ClozyColors.White)
+            .background(ClozyColors.Surface)
             .border(1.333.dp, ClozyColors.TextFaint, RoundedCornerShape(0.dp))
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,

@@ -2,7 +2,18 @@ package com.clozy.app.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
+import android.app.Activity
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -13,14 +24,22 @@ import androidx.compose.ui.unit.sp
 import com.clozy.app.R
 
 
+enum class ThemeMode(val label: String) { System("Sistema"), Light("Claro"), Dark("Oscuro") }
+
 object ClozyColors {
-    val Background = Color(0xFFFFF9F7)
+    // Se actualiza desde ClozyTheme. Al ser estado de Compose, la interfaz se redibuja sola.
+    var isDark by mutableStateOf(false)
+    private fun pick(light: Color, dark: Color) = if (isDark) dark else light
+
+    // Fondo de tarjetas, campos y botones claros (en modo oscuro pasa a gris oscuro).
+    val Surface: Color get() = pick(Color(0xFFFFFFFF), Color(0xFF211A1D))
+    val Background: Color get() = pick(Color(0xFFFFF9F7), Color(0xFF161214))
     val Primary = Color(0xFFF72585)
     val PrimaryDark = Color(0xFFC4006A)
     val Lavender = Color(0xFFB8A4FF)
     val Peach = Color(0xFFFFB38A)
-    val PrimarySoft = Color(0xFFFFF0F6)
-    val PeachSoft = Color(0xFFFFF4EE)
+    val PrimarySoft: Color get() = pick(Color(0xFFFFF0F6), Color(0xFF2E1823))
+    val PeachSoft: Color get() = pick(Color(0xFFFFF4EE), Color(0xFF2B1F1B))
     val PeachDark = Color(0xFFE08060)
     val ColorWhite = Color(0xFFFFFFFF)
     val ColorBlack = Color(0xFF211A1D)
@@ -33,18 +52,18 @@ object ClozyColors {
     val ColorGreen = Color(0xFF8FBF9F)
     val StyleRosa = Color(0xFFFF8FAB)
     val StyleIvory = Color(0xFFEDE4E1)
-    val CardDark = Color(0xFF211A1D)
-    val CardBorderDark = Color(0xFF3A2F33)
+    val CardDark: Color get() = pick(Color(0xFF211A1D), Color(0xFF2A2125))
+    val CardBorderDark: Color get() = pick(Color(0xFF3A2F33), Color(0xFF4A3D42))
     val AiGradientStart = Color(0xFF4A2830)
     val AiGradientEnd = Color(0xFF6B2060)
     val AiAccent = Color(0xFFFF8FAB)
     val AiSubtext = Color(0xFFD4A0B8)
     val Error = Color(0xFFE53935)
-    val ErrorSoft = Color(0xFFFFF0F0)
-    val Blush = Color(0xFFFDF0ED)
-    val TextPrimary = Color(0xFF211A1D)
-    val TextMuted = Color(0xFF9E8E92)
-    val TextFaint = Color(0xFFEEE4E1)
+    val ErrorSoft: Color get() = pick(Color(0xFFFFF0F0), Color(0xFF3A1D1F))
+    val Blush: Color get() = pick(Color(0xFFFDF0ED), Color(0xFF2A2024))
+    val TextPrimary: Color get() = pick(Color(0xFF211A1D), Color(0xFFF5ECEE))
+    val TextMuted: Color get() = pick(Color(0xFF9E8E92), Color(0xFFB5A6AB))
+    val TextFaint: Color get() = pick(Color(0xFFEEE4E1), Color(0xFF3A2F33))
     val White = Color(0xFFFFFFFF)
 }
 
@@ -136,8 +155,43 @@ object ClozyType {
 }
 
 @Composable
-fun ClozyTheme(content: @Composable () -> Unit) {
+fun ClozyTheme(themeMode: ThemeMode = ThemeMode.System, content: @Composable () -> Unit) {
+    val dark = when (themeMode) {
+        ThemeMode.System -> isSystemInDarkTheme()
+        ThemeMode.Light -> false
+        ThemeMode.Dark -> true
+    }
+    if (ClozyColors.isDark != dark) ClozyColors.isDark = dark
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            window.statusBarColor = ClozyColors.Background.toArgb()
+            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(ClozyColors.Background.toArgb()))
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !dark
+        }
+    }
+
+    val scheme = if (dark) {
+        darkColorScheme(
+            primary = ClozyColors.Primary,
+            background = ClozyColors.Background,
+            surface = ClozyColors.Surface,
+            onBackground = ClozyColors.TextPrimary,
+            onSurface = ClozyColors.TextPrimary,
+        )
+    } else {
+        lightColorScheme(
+            primary = ClozyColors.Primary,
+            background = ClozyColors.Background,
+            surface = ClozyColors.Surface,
+            onBackground = ClozyColors.TextPrimary,
+            onSurface = ClozyColors.TextPrimary,
+        )
+    }
     MaterialTheme(
+        colorScheme = scheme,
         typography = Typography(bodyLarge = ClozyType.Subtitle),
         content = content,
     )

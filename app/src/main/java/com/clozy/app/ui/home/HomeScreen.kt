@@ -101,7 +101,7 @@ private fun HomeHeader(userName: String, onNotificationsClick: () -> Unit) {
                 .padding(top = 4.dp)
                 .size(36.dp)
                 .shadow(2.dp, CircleShape, ambientColor = Color(0x14000000), spotColor = Color(0x14000000))
-                .background(ClozyColors.White, CircleShape)
+                .background(ClozyColors.Surface, CircleShape)
                 .border(1.333.dp, ClozyColors.TextFaint, CircleShape)
                 .clickable(onClick = onNotificationsClick),
             contentAlignment = Alignment.Center,

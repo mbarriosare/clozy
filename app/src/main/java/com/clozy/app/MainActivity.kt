@@ -31,6 +31,8 @@ import com.clozy.app.ui.profile.PhoneVerifyScreen
 import com.clozy.app.ui.profile.PrivacyScreen
 import com.clozy.app.ui.profile.SettingsScreen
 import com.clozy.app.ui.profile.StylePreferences
+import com.clozy.app.ui.profile.AboutScreen
+import com.clozy.app.ui.profile.HelpScreen
 import com.clozy.app.ui.profile.TermsScreen
 import com.clozy.app.ui.profile.ProfileVisibility
 import com.clozy.app.ui.profile.UserProfile
@@ -46,7 +48,16 @@ import com.clozy.app.ui.outfits.CreateOutfitScreen
 import com.clozy.app.ui.outfits.Outfit
 import com.clozy.app.ui.outfits.OutfitDetailScreen
 import com.clozy.app.ui.outfits.OutfitsScreen
+import com.clozy.app.data.GeminiOutfitRepository
+import com.clozy.app.data.MarketRepository
 import com.clozy.app.data.OutfitRepository
+import com.clozy.app.ui.market.CreateListingScreen
+import com.clozy.app.ui.market.Listing
+import com.clozy.app.ui.market.ListingDetailScreen
+import com.clozy.app.ui.market.ListingStatus
+import com.clozy.app.ui.market.MarketScreen
+import com.clozy.app.ui.market.MyListingsScreen
+import com.clozy.app.ui.market.MyPurchasesScreen
 import com.clozy.app.ui.login.EmailVerificationScreen
 import com.clozy.app.ui.login.LoginScreen
 import com.clozy.app.ui.recover.CheckEmailScreen
@@ -58,6 +69,7 @@ import com.clozy.app.ui.status.NoConnectionScreen
 import com.clozy.app.ui.status.ServerErrorScreen
 import com.clozy.app.ui.status.SuccessScreen
 import com.clozy.app.ui.theme.ClozyTheme
+import com.clozy.app.ui.theme.ThemeMode
 import com.clozy.app.ui.welcome.WelcomeScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -80,7 +92,9 @@ enum class Route {
     Profile, EditProfile, ChangePassword, ProfileUpdated, PasswordUpdatedProfile,
     Privacy, Notifications, Settings, Terms, EditStyle, StyleUpdated,
     Outfits, CreateOutfit, OutfitGenerating, OutfitDetail,
-    Favorites,
+    Favorites, Help, About,
+    Market, ListingDetail, CreateListing, Buying, PurchaseDone, PurchaseFailed,
+    MyListings, MyPurchases,
 }
 
 
@@ -90,6 +104,7 @@ private fun routeForNav(nav: String, current: Route): Route = when (nav) {
     "wardrobe" -> Route.Wardrobe
     "profile" -> Route.Profile
     "outfits" -> Route.Outfits
+    "market" -> Route.Market
     else -> current
 }
 
@@ -252,8 +267,15 @@ class MainActivity : ComponentActivity() {
             if (granted) launchCamera()
         }
 
+        val prefs = getSharedPreferences("clozy_prefs", MODE_PRIVATE)
         setContent {
-            ClozyTheme {
+            var themeMode by androidx.compose.runtime.remember {
+                mutableStateOf(
+                    runCatching { ThemeMode.valueOf(prefs.getString("theme_mode", ThemeMode.System.name) ?: "") }
+                        .getOrDefault(ThemeMode.System),
+                )
+            }
+            ClozyTheme(themeMode) {
                 var route by rememberSaveable { mutableStateOf(Route.Bienvenida) }
                 var forgotError by androidx.compose.runtime.remember { mutableStateOf<String?>(null) }
                 var loginError by androidx.compose.runtime.remember { mutableStateOf<String?>(null) }
@@ -267,10 +289,36 @@ class MainActivity : ComponentActivity() {
                 var selectedOutfit by androidx.compose.runtime.remember { mutableStateOf<Outfit?>(null) }
                 var pendingOutfitOccasion by androidx.compose.runtime.remember { mutableStateOf("") }
                 var pendingOutfitStyle by androidx.compose.runtime.remember { mutableStateOf("") }
+                var pendingOutfitWeather by androidx.compose.runtime.remember { mutableStateOf("") }
                 var outfitError by androidx.compose.runtime.remember { mutableStateOf<String?>(null) }
+                var marketListings by androidx.compose.runtime.remember { mutableStateOf(emptyList<Listing>()) }
+                var myListings by androidx.compose.runtime.remember { mutableStateOf(emptyList<Listing>()) }
+                var myPurchases by androidx.compose.runtime.remember { mutableStateOf(emptyList<Listing>()) }
+                var selectedListing by androidx.compose.runtime.remember { mutableStateOf<Listing?>(null) }
+                var selectedMarketCategory by androidx.compose.runtime.remember { mutableStateOf<com.clozy.app.ui.wardrobe.GarmentCategory?>(null) }
+                var isBuying by androidx.compose.runtime.remember { mutableStateOf(false) }
+                var listingError by androidx.compose.runtime.remember { mutableStateOf<String?>(null) }
+                // Carga el mercado sin romper el inicio de sesión si falla, y retira del
+                // armario las prendas que el usuario ya vendió.
+                suspend fun loadMarketData(uid: String) {
+                    try {
+                        marketListings = MarketRepository.fetchActiveListings()
+                        myListings = MarketRepository.fetchMyListings(uid)
+                        myPurchases = MarketRepository.fetchMyPurchases(uid)
+                        val soldDocIds = myListings
+                            .filter { it.status == ListingStatus.Sold }
+                            .mapNotNull { it.garmentDocId }
+                        if (WardrobeRepository.removeByDocIds(uid, soldDocIds)) {
+                            garments = WardrobeRepository.fetchAll(uid)
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("ClozyMarket", "No se pudo cargar el mercado", e)
+                    }
+                }
                 var wardrobeQuery by androidx.compose.runtime.remember { mutableStateOf("") }
                 var wardrobeCategory by androidx.compose.runtime.remember { mutableStateOf<GarmentCategory?>(null) }
                 var selectedGarment by androidx.compose.runtime.remember { mutableStateOf<Garment?>(null) }
+                var notificationsOrigin by androidx.compose.runtime.remember { mutableStateOf(Route.Profile) }
                 var garmentOrigin by androidx.compose.runtime.remember { mutableStateOf(Route.Wardrobe) }
                 var showDeleteDialog by androidx.compose.runtime.remember { mutableStateOf(false) }
                 var userProfile by androidx.compose.runtime.remember {
@@ -380,6 +428,9 @@ class MainActivity : ComponentActivity() {
                                 val user = AuthRepository.register(pendingName, pendingEmail, pendingPassword)
                                 garments = emptyList()
                                 outfits = emptyList()
+                                marketListings = emptyList()
+                                myListings = emptyList()
+                                myPurchases = emptyList()
                                 val defaultUsername = "@" + pendingEmail.substringBefore("@")
                                 ProfileRepository.save(user.uid, pendingName, defaultUsername, "")
                                 userProfile = userProfile.copy(
@@ -417,6 +468,7 @@ class MainActivity : ComponentActivity() {
                                 } else {
                                     garments = WardrobeRepository.fetchAll(user.uid)
                                     outfits = OutfitRepository.fetchAll(user.uid)
+                                    loadMarketData(user.uid)
                                     val stored = ProfileRepository.fetch(user.uid)
                                     val defaultUsername = "@" + loginEmail.substringBefore("@")
                                     userProfile = userProfile.copy(
@@ -467,6 +519,9 @@ class MainActivity : ComponentActivity() {
                             AuthRepository.logout()
                             garments = emptyList()
                                 outfits = emptyList()
+                                marketListings = emptyList()
+                                myListings = emptyList()
+                                myPurchases = emptyList()
                             verifiedPhoneDisplay = null
                             selectedNav = "home"
                             route = Route.Login
@@ -488,6 +543,7 @@ class MainActivity : ComponentActivity() {
                                         } else {
                                             garments = WardrobeRepository.fetchAll(user.uid)
                                     outfits = OutfitRepository.fetchAll(user.uid)
+                                    loadMarketData(user.uid)
                                             val stored = ProfileRepository.fetch(user.uid)
                                             val defaultUsername = "@" + (user.email ?: "").substringBefore("@")
                                             userProfile = userProfile.copy(
@@ -530,6 +586,7 @@ class MainActivity : ComponentActivity() {
                                         val user = AuthRepository.signInWithGoogleIdToken(result.idToken)
                                         garments = WardrobeRepository.fetchAll(user.uid)
                                     outfits = OutfitRepository.fetchAll(user.uid)
+                                    loadMarketData(user.uid)
                                         val stored = ProfileRepository.fetch(user.uid)
                                         val defaultUsername = "@" + (user.email ?: "usuario").substringBefore("@")
                                         if (stored == null) {
@@ -643,18 +700,18 @@ class MainActivity : ComponentActivity() {
                     Route.Home -> HomeScreen(
                         userName = userProfile.name.ifBlank { userProfile.username.removePrefix("@") },
                         itemsCount = garments.size,
-                        looksCount = 0,
+                        looksCount = outfits.size,
                         favoritesCount = garments.count { it.isFavorite },
                         selectedNav = selectedNav,
                         onNavClick = { nav ->
                             selectedNav = nav
                             route = routeForNav(nav, route)
                         },
-                        onNotificationsClick = {},
+                        onNotificationsClick = { notificationsOrigin = Route.Home; route = Route.Notifications },
                         onWardrobeClick = { selectedNav = "wardrobe"; route = Route.Wardrobe },
                         onOutfitsClick = { selectedNav = "outfits"; route = Route.Outfits },
-                        onAiClick = {},
-                        onCreateLookClick = {},
+                        onAiClick = { selectedNav = "outfits"; outfitError = null; route = Route.CreateOutfit },
+                        onCreateLookClick = { selectedNav = "outfits"; outfitError = null; route = Route.CreateOutfit },
                     )
                     Route.Profile -> ClozyMainScaffold(
                         selectedNav = selectedNav,
@@ -666,6 +723,7 @@ class MainActivity : ComponentActivity() {
                         ProfileScreen(
                             profile = userProfile.copy(
                                 itemsCount = garments.size,
+                                looksCount = outfits.size,
                                 favoritesCount = garments.count { it.isFavorite },
                             ),
                             onSettingsClick = { route = Route.Settings },
@@ -678,7 +736,7 @@ class MainActivity : ComponentActivity() {
                                 garmentOrigin = Route.Profile
                                 route = Route.GarmentDetail
                             },
-                            onNotificationsClick = { route = Route.Notifications },
+                            onNotificationsClick = { notificationsOrigin = Route.Profile; route = Route.Notifications },
                             onPrivacyClick = { route = Route.Privacy },
                             onSecurityClick = { route = Route.ChangePassword },
                             onTermsClick = { route = Route.Terms },
@@ -686,6 +744,9 @@ class MainActivity : ComponentActivity() {
                                 AuthRepository.logout()
                                 garments = emptyList()
                                 outfits = emptyList()
+                                marketListings = emptyList()
+                                myListings = emptyList()
+                                myPurchases = emptyList()
                                 verifiedPhoneDisplay = null
                                 selectedNav = "home"
                                 route = Route.Bienvenida
@@ -800,9 +861,11 @@ class MainActivity : ComponentActivity() {
                     Route.Notifications -> NotificationsScreen(
                         settings = notificationSettings,
                         onSettingsChange = { notificationSettings = it },
-                        onBackClick = { route = Route.Profile },
+                        onBackClick = { route = notificationsOrigin },
                     )
                     Route.Terms -> TermsScreen(onBackClick = { route = Route.Profile })
+                    Route.Help -> HelpScreen(onBackClick = { route = Route.Settings })
+                    Route.About -> AboutScreen(onBackClick = { route = Route.Settings })
                     Route.EditStyle -> EditStyleScreen(
                         initial = StylePreferences(
                             styles = userProfile.styleTags.filter { it.second }.map { it.first }.toSet(),
@@ -836,9 +899,11 @@ class MainActivity : ComponentActivity() {
                         onContinue = { route = Route.Profile },
                     )
                     Route.Settings -> SettingsScreen(
+                        themeMode = themeMode,
+                        onThemeModeChange = { themeMode = it; prefs.edit().putString("theme_mode", it.name).apply() },
                         onBackClick = { route = Route.Profile },
-                        onHelpClick = {},
-                        onAboutClick = {},
+                        onHelpClick = { route = Route.Help },
+                        onAboutClick = { route = Route.About },
                         deleteError = deleteAccountError,
                         isDeleting = isDeletingAccount,
                         showDeleteDialog = showDeleteAccountDialog,
@@ -856,12 +921,16 @@ class MainActivity : ComponentActivity() {
                                 scope.launch {
                                     try {
                                         WardrobeRepository.deleteAll(uid)
+                                        MarketRepository.deleteOpenListings(uid)
                                         ProfileRepository.deleteDoc(uid)
                                         AuthRepository.deleteAccount()
                                         isDeletingAccount = false
                                         showDeleteAccountDialog = false
                                         garments = emptyList()
                                 outfits = emptyList()
+                                marketListings = emptyList()
+                                myListings = emptyList()
+                                myPurchases = emptyList()
                                         userProfile = userProfile.copy(name = "", username = "", email = "", city = "")
                                         selectedNav = "home"
                                         route = Route.Bienvenida
@@ -931,17 +1000,20 @@ class MainActivity : ComponentActivity() {
                     Route.CreateOutfit -> CreateOutfitScreen(
                         onBackClick = { route = Route.Outfits },
                         errorMessage = outfitError,
-                        onCreateClick = { occasion, style ->
+                        onCreateClick = { occasion, style, weather ->
                             pendingOutfitOccasion = occasion
                             pendingOutfitStyle = style
+                            pendingOutfitWeather = weather
                             outfitError = null
                             route = Route.OutfitGenerating
                         },
                     )
                     Route.OutfitGenerating -> {
-                        LaunchedEffect(pendingOutfitOccasion, pendingOutfitStyle) {
-                            delay(900)
-                            val pieceIds = pickOutfitGarments(garments, pendingOutfitStyle)
+                        LaunchedEffect(pendingOutfitOccasion, pendingOutfitStyle, pendingOutfitWeather) {
+                            val aiResult = GeminiOutfitRepository.generateOutfit(
+                                garments, pendingOutfitOccasion, pendingOutfitStyle, pendingOutfitWeather,
+                            )
+                            val pieceIds = aiResult?.garmentIds ?: pickOutfitGarments(garments, pendingOutfitStyle)
                             if (pieceIds.size < 2) {
                                 outfitError = "No tienes suficientes prendas de este estilo para armar un outfit. Agrega más prendas a tu armario."
                                 route = Route.CreateOutfit
@@ -949,17 +1021,18 @@ class MainActivity : ComponentActivity() {
                                 val pieces = pieceIds.mapNotNull { id -> garments.find { it.id == id } }
                                 val newOutfit = Outfit(
                                     id = (0..999999).random(),
-                                    name = outfitName(pieces, pendingOutfitStyle),
+                                    name = aiResult?.name ?: outfitName(pieces, pendingOutfitStyle),
                                     occasion = pendingOutfitOccasion,
                                     style = pendingOutfitStyle,
                                     garmentIds = pieceIds,
                                     createdBy = "Clozy AI",
+                                    aiExplanation = aiResult?.explanation,
                                 )
                                 AuthRepository.currentUser?.let { u ->
                                     try {
-                                        OutfitRepository.add(u.uid, newOutfit)
-                                        outfits = outfits + newOutfit
-                                        selectedOutfit = newOutfit
+                                        val savedOutfit = OutfitRepository.add(u.uid, newOutfit)
+                                        outfits = outfits + savedOutfit
+                                        selectedOutfit = savedOutfit
                                         route = Route.OutfitDetail
                                     } catch (e: Exception) {
                                         outfitError = "No pudimos guardar el outfit. Inténtalo de nuevo."
@@ -992,19 +1065,23 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onRegenerateClick = {
-                                    val newPieceIds = pickOutfitGarments(garments, outfit.style)
-                                    if (newPieceIds.size < 2) {
-                                        return@OutfitDetailScreen
-                                    }
-                                    val pieces = newPieceIds.mapNotNull { id -> garments.find { it.id == id } }
-                                    val updated = outfit.copy(
-                                        garmentIds = newPieceIds,
-                                        name = outfitName(pieces, outfit.style),
-                                    )
-                                    outfits = outfits.map { if (it.id == updated.id) updated else it }
-                                    selectedOutfit = updated
-                                    AuthRepository.currentUser?.let { u ->
-                                        scope.launch { OutfitRepository.update(u.uid, updated) }
+                                    scope.launch {
+                                        val aiResult = GeminiOutfitRepository.generateOutfit(
+                                            garments, outfit.occasion, outfit.style, "",
+                                        )
+                                        val newPieceIds = aiResult?.garmentIds ?: pickOutfitGarments(garments, outfit.style)
+                                        if (newPieceIds.size < 2) return@launch
+                                        val pieces = newPieceIds.mapNotNull { id -> garments.find { it.id == id } }
+                                        val updated = outfit.copy(
+                                            garmentIds = newPieceIds,
+                                            name = aiResult?.name ?: outfitName(pieces, outfit.style),
+                                            aiExplanation = aiResult?.explanation,
+                                        )
+                                        outfits = outfits.map { if (it.id == updated.id) updated else it }
+                                        selectedOutfit = updated
+                                        AuthRepository.currentUser?.let { u ->
+                                            OutfitRepository.update(u.uid, updated)
+                                        }
                                     }
                                 },
                                 onDeleteClick = {
@@ -1018,6 +1095,144 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+                    Route.Market -> ClozyMainScaffold(
+                        selectedNav = selectedNav,
+                        onNavClick = { nav ->
+                            selectedNav = nav
+                            route = routeForNav(nav, route)
+                        },
+                    ) {
+                        val currentUid = AuthRepository.currentUser?.uid
+                        LaunchedEffect(Unit) { currentUid?.let { loadMarketData(it) } }
+                        MarketScreen(
+                            listings = marketListings.filter { it.sellerId != currentUid },
+                            selectedCategory = selectedMarketCategory,
+                            onCategoryClick = { selectedMarketCategory = it },
+                            onPublishClick = { listingError = null; route = Route.CreateListing },
+                            onListingClick = { listing ->
+                                selectedListing = listing
+                                listingError = null
+                                route = Route.ListingDetail
+                            },
+                            onMyListingsClick = { route = Route.MyListings },
+                            onMyPurchasesClick = { route = Route.MyPurchases },
+                        )
+                    }
+                    Route.CreateListing -> CreateListingScreen(
+                        garments = garments,
+                        errorMessage = listingError,
+                        onBackClick = { route = Route.Market },
+                        onPublishClick = { garment, price, condition ->
+                            val user = AuthRepository.currentUser
+                            if (user == null) {
+                                listingError = "No hay una sesión activa."
+                            } else {
+                                val newListing = Listing(
+                                    sellerId = user.uid,
+                                    sellerUsername = userProfile.username,
+                                    name = garment.name,
+                                    price = price,
+                                    condition = condition,
+                                    category = garment.category,
+                                    primaryColor = garment.primaryColor,
+                                    photoUrl = garment.photoUrl,
+                                    status = ListingStatus.Active,
+                                    garmentDocId = WardrobeRepository.docIdOf(garment),
+                                    createdAt = System.currentTimeMillis(),
+                                )
+                                scope.launch {
+                                    try {
+                                        val saved = MarketRepository.publish(newListing)
+                                        marketListings = marketListings + saved
+                                        myListings = myListings + saved
+                                        listingError = null
+                                        route = Route.Market
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("ClozyMarket", "Error al publicar", e)
+                                        listingError = "No pudimos publicar la prenda. Inténtalo de nuevo."
+                                    }
+                                }
+                            }
+                        },
+                    )
+                    Route.ListingDetail -> {
+                        val listing = selectedListing
+                        if (listing == null) {
+                            route = Route.Market
+                        } else {
+                            ListingDetailScreen(
+                                listing = listing,
+                                isBuying = isBuying,
+                                isOwnListing = listing.sellerId == AuthRepository.currentUser?.uid,
+                                onBackClick = { route = Route.Market },
+                                onBuyClick = {
+                                    val user = AuthRepository.currentUser
+                                    if (user == null || user.uid == listing.sellerId) {
+                                        route = Route.PurchaseFailed
+                                    } else {
+                                        isBuying = true
+                                        route = Route.Buying
+                                        scope.launch {
+                                            try {
+                                                val result = MarketRepository.purchase(listing.id, user.uid)
+                                                val updated = result.listing
+                                                garments = garments + result.garment
+                                                myPurchases = myPurchases + updated
+                                                marketListings = marketListings.filterNot { it.id == listing.id }
+                                                selectedListing = updated
+                                                isBuying = false
+                                                route = Route.PurchaseDone
+                                            } catch (e: Exception) {
+                                                android.util.Log.e("ClozyMarket", "Error al comprar", e)
+                                                isBuying = false
+                                                route = Route.PurchaseFailed
+                                            }
+                                        }
+                                    }
+                                },
+                            )
+                        }
+                    }
+                    Route.Buying -> FlowLoadingScreen(
+                        icon = ClozyIcons.PersonAdd,
+                        title = "Procesando tu compra",
+                        subtitle = "Por favor espera un momento...",
+                    )
+                    Route.PurchaseDone -> SuccessScreen(
+                        title = "¡Compra realizada!",
+                        subtitle = "La prenda ya está en tu armario digital.",
+                        buttonText = "Ver mi armario",
+                        onContinue = { selectedNav = "wardrobe"; route = Route.Wardrobe },
+                    )
+                    Route.PurchaseFailed -> ServerErrorScreen(
+                        onRetryClick = { route = Route.ListingDetail },
+                        onBackClick = { route = Route.Market },
+                    )
+                    Route.MyListings -> MyListingsScreen(
+                        listings = myListings,
+                        onBackClick = { route = Route.Market },
+                        onPauseClick = { listing ->
+                            val updated = listing.copy(status = ListingStatus.Paused)
+                            myListings = myListings.map { if (it.id == updated.id) updated else it }
+                            marketListings = marketListings.filterNot { it.id == updated.id }
+                            scope.launch { MarketRepository.updateStatus(listing.id, ListingStatus.Paused) }
+                        },
+                        onActivateClick = { listing ->
+                            val updated = listing.copy(status = ListingStatus.Active)
+                            myListings = myListings.map { if (it.id == updated.id) updated else it }
+                            marketListings = marketListings + updated
+                            scope.launch { MarketRepository.updateStatus(listing.id, ListingStatus.Active) }
+                        },
+                        onDeleteClick = { listing ->
+                            myListings = myListings.filterNot { it.id == listing.id }
+                            marketListings = marketListings.filterNot { it.id == listing.id }
+                            scope.launch { MarketRepository.delete(listing.id) }
+                        },
+                    )
+                    Route.MyPurchases -> MyPurchasesScreen(
+                        purchases = myPurchases,
+                        onBackClick = { route = Route.Market },
+                    )
                     Route.GarmentDetail -> {
                         val g = selectedGarment
                         if (g == null) {
@@ -1142,8 +1357,13 @@ class MainActivity : ComponentActivity() {
                                     } else {
                                         newGarment
                                     }
-                                    garments = garments + garmentToSave
-                                    WardrobeRepository.add(u.uid, garmentToSave)
+                                    val saved = try {
+                                        WardrobeRepository.add(u.uid, garmentToSave)
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("ClozyWardrobe", "No se pudo guardar la prenda", e)
+                                        garmentToSave
+                                    }
+                                    garments = garments + saved
                                     clearPickedImage()
                                 }
                             }

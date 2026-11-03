@@ -1,0 +1,14 @@
+# Claves y configuración local (NO subir)
+local.properties
+
+# Android Studio / Gradle
+*.iml
+.gradle/
+.idea/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+.DS_Store

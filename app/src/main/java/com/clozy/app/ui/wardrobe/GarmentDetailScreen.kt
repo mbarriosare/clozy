@@ -69,7 +69,7 @@ private fun AttributeCard(label: String, value: String, modifier: Modifier = Mod
     val shape = RoundedCornerShape(16.dp)
     Column(
         modifier
-            .background(ClozyColors.White, shape)
+            .background(ClozyColors.Surface, shape)
             .border(1.dp, ClozyColors.TextFaint, shape)
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
@@ -132,7 +132,7 @@ fun GarmentDetailScreen(
                         Column(
                             Modifier
                                 .fillMaxWidth()
-                                .background(ClozyColors.White, RoundedCornerShape(16.dp))
+                                .background(ClozyColors.Surface, RoundedCornerShape(16.dp))
                                 .border(1.dp, ClozyColors.TextFaint, RoundedCornerShape(16.dp))
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                         ) {
@@ -192,7 +192,7 @@ fun DeleteGarmentDialog(onConfirm: () -> Unit, onCancel: () -> Unit, modifier: M
             Modifier
                 .padding(horizontal = 24.dp, vertical = 32.dp)
                 .fillMaxWidth()
-                .background(ClozyColors.White, RoundedCornerShape(24.dp))
+                .background(ClozyColors.Surface, RoundedCornerShape(24.dp))
                 .clickable(enabled = false) {}
                 .padding(24.dp),
         ) {

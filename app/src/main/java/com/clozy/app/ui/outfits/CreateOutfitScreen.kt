@@ -64,7 +64,7 @@ private fun ChipGroup(options: List<String>, selected: String, onSelect: (String
 @Composable
 fun CreateOutfitScreen(
     onBackClick: () -> Unit,
-    onCreateClick: (occasion: String, style: String) -> Unit,
+    onCreateClick: (occasion: String, style: String, weather: String) -> Unit,
     modifier: Modifier = Modifier,
     isGenerating: Boolean = false,
     errorMessage: String? = null,
@@ -112,7 +112,7 @@ fun CreateOutfitScreen(
             Spacer(Modifier.height(4.dp))
             ClozyPrimaryButton(
                 if (isGenerating) "Creando outfit..." else "Crear mi outfit ✦",
-                onClick = { onCreateClick(occasion, style) },
+                onClick = { onCreateClick(occasion, style, weather) },
             )
             Text(
                 "Cancelar", style = ClozyType.BodyMedium, color = ClozyColors.TextMuted,
@@ -130,4 +130,4 @@ fun CreateOutfitScreen(
 
 @Preview(showBackground = true, widthDp = 412, heightDp = 917)
 @Composable
-private fun CreateOutfitPreview() { ClozyTheme { CreateOutfitScreen({}, { _, _ -> }) } }
+private fun CreateOutfitPreview() { ClozyTheme { CreateOutfitScreen({}, { _, _, _ -> }) } }

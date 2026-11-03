@@ -92,7 +92,7 @@ fun OutfitDetailScreen(
                     pieces.forEach { g ->
                         val shape = RoundedCornerShape(16.dp)
                         Row(
-                            Modifier.fillMaxWidth().background(ClozyColors.White, shape).border(1.dp, ClozyColors.TextFaint, shape).padding(horizontal = 16.dp, vertical = 12.dp),
+                            Modifier.fillMaxWidth().background(ClozyColors.Surface, shape).border(1.dp, ClozyColors.TextFaint, shape).padding(horizontal = 16.dp, vertical = 12.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -122,6 +122,28 @@ fun OutfitDetailScreen(
                 InfoChip("Creado por", outfit.createdBy, Modifier.weight(1f))
             }
 
+            if (!outfit.aiExplanation.isNullOrBlank()) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .background(ClozyColors.Blush, RoundedCornerShape(16.dp))
+                        .padding(16.dp),
+                ) {
+                    Text(
+                        "¿POR QUÉ FUNCIONA?",
+                        style = ClozyType.CaptionBold.copy(fontSize = 9.sp, letterSpacing = 1.08.sp),
+                        color = ClozyColors.Primary,
+                    )
+                    Text(
+                        outfit.aiExplanation,
+                        style = ClozyType.BodyRegular.copy(lineHeight = 20.sp),
+                        color = ClozyColors.TextPrimary,
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
+                }
+            }
+
             Spacer(Modifier.height(20.dp))
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 ClozyOutlinedButton(
@@ -140,7 +162,7 @@ fun OutfitDetailScreen(
 private fun InfoChip(label: String, value: String, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(16.dp)
     Column(
-        modifier.background(ClozyColors.White, shape).border(1.dp, ClozyColors.TextFaint, shape).padding(12.dp),
+        modifier.background(ClozyColors.Surface, shape).border(1.dp, ClozyColors.TextFaint, shape).padding(12.dp),
     ) {
         Text(label.uppercase(), style = ClozyType.CaptionBold.copy(fontSize = 8.sp, letterSpacing = 0.96.sp), color = ClozyColors.TextMuted)
         Text(value, style = ClozyType.BodyMedium.copy(fontSize = 12.sp, fontWeight = FontWeight.SemiBold), color = ClozyColors.TextPrimary, modifier = Modifier.padding(top = 2.dp))

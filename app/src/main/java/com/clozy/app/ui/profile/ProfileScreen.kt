@@ -155,7 +155,7 @@ private fun Header(onSettingsClick: () -> Unit) {
         Box(
             Modifier
                 .size(36.dp)
-                .background(ClozyColors.White, CircleShape)
+                .background(ClozyColors.Surface, CircleShape)
                 .border(1.dp, ClozyColors.TextFaint, CircleShape)
                 .clickable(onClick = onSettingsClick),
             contentAlignment = Alignment.Center,

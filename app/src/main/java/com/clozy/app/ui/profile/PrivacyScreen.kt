@@ -65,7 +65,7 @@ fun PrivacyScreen(
 @Composable
 private fun VisibilityOptionCard(option: ProfileVisibility, selected: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(16.dp)
-    val bg = if (selected) ClozyColors.Blush else ClozyColors.White
+    val bg = if (selected) ClozyColors.Blush else ClozyColors.Surface
     val border = if (selected) ClozyColors.Primary else ClozyColors.TextFaint
     Row(
         Modifier

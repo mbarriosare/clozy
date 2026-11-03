@@ -70,7 +70,7 @@ private fun MethodOption(icon: ImageVector, title: String, subtitle: String, onC
     Row(
         Modifier
             .fillMaxWidth()
-            .background(ClozyColors.White, shape)
+            .background(ClozyColors.Surface, shape)
             .border(1.dp, ClozyColors.TextFaint, shape)
             .clickable(onClick = onClick)
             .padding(20.dp),
@@ -285,7 +285,7 @@ fun ManualGarmentFormScreen(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .background(ClozyColors.White, RoundedCornerShape(16.dp))
+                    .background(ClozyColors.Surface, RoundedCornerShape(16.dp))
                     .border(1.dp, ClozyColors.TextFaint, RoundedCornerShape(16.dp))
                     .clickable { favorite = !favorite }
                     .padding(horizontal = 16.dp, vertical = 14.dp),

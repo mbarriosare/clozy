@@ -131,7 +131,7 @@ private fun OutfitCard(outfit: Outfit, garments: List<Garment>, onClick: () -> U
     val pieces = outfit.garmentIds.mapNotNull { id -> garments.find { it.id == id } }.take(3)
     Column(
         modifier
-            .background(ClozyColors.White, shape)
+            .background(ClozyColors.Surface, shape)
             .border(1.dp, ClozyColors.TextFaint, shape)
             .clickable(onClick = onClick),
     ) {

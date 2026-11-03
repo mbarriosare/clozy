@@ -37,6 +37,7 @@ import com.clozy.app.ui.components.ClozyGradientBar
 import com.clozy.app.ui.theme.ClozyColors
 import com.clozy.app.ui.theme.ClozyTheme
 import com.clozy.app.ui.theme.ClozyType
+import com.clozy.app.ui.theme.ThemeMode
 
 @Composable
 private fun SectionLabel(text: String) {
@@ -44,9 +45,11 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun StaticInfoRow(icon: ImageVector, label: String, value: String) {
+private fun StaticInfoRow(icon: ImageVector, label: String, value: String, onClick: (() -> Unit)? = null) {
     Row(
-        Modifier.fillMaxWidth().padding(vertical = 14.dp),
+        Modifier.fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -90,6 +93,8 @@ fun SettingsScreen(
     showDeleteDialog: Boolean = false,
     onConfirmDelete: () -> Unit = {},
     onDismissDeleteDialog: () -> Unit = {},
+    themeMode: ThemeMode = ThemeMode.System,
+    onThemeModeChange: (ThemeMode) -> Unit = {},
 ) {
     Box(modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().background(ClozyColors.Background)) {
@@ -103,7 +108,10 @@ fun SettingsScreen(
                     Column(Modifier.padding(top = 4.dp)) {
                         StaticInfoRow(Icons.Outlined.Language, "Idioma", "Español")
                         Divider()
-                        StaticInfoRow(Icons.Outlined.Palette, "Apariencia", "Claro")
+                        StaticInfoRow(
+                            Icons.Outlined.Palette, "Apariencia", themeMode.label,
+                            onClick = { onThemeModeChange(ThemeMode.entries[(themeMode.ordinal + 1) % ThemeMode.entries.size]) },
+                        )
                         Divider()
                         StaticInfoRow(Icons.Outlined.Straighten, "Unidades", "Métrico")
                     }

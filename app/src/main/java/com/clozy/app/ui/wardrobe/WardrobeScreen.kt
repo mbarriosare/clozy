@@ -128,7 +128,7 @@ private fun SearchBar(value: String, onValueChange: (String) -> Unit, modifier: 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(ClozyColors.White, shape)
+            .background(ClozyColors.Surface, shape)
             .border(1.dp, ClozyColors.TextFaint, shape)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -170,7 +170,7 @@ internal fun GarmentCard(garment: Garment, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(ClozyColors.White, shape)
+            .background(ClozyColors.Surface, shape)
             .border(1.dp, ClozyColors.TextFaint, shape)
             .clickable(onClick = onClick),
     ) {

@@ -107,7 +107,7 @@ fun ClozySocialButton(
             .fillMaxWidth()
             .height(50.dp)
             .shadow(1.dp, ButtonShape, ambientColor = Color(0x0F000000), spotColor = Color(0x0F000000))
-            .background(ClozyColors.White, ButtonShape)
+            .background(ClozyColors.Surface, ButtonShape)
             .border(BorderStroke(1.111.dp, ClozyColors.TextFaint), ButtonShape)
             .clickable(onClick = onClick),
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
@@ -139,7 +139,7 @@ fun ClozyTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(1.dp, FieldShape, ambientColor = Color(0x0F211A1D), spotColor = Color(0x0F211A1D))
-                .background(ClozyColors.White, FieldShape)
+                .background(ClozyColors.Surface, FieldShape)
                 .border(BorderStroke(1.111.dp, borderColor), FieldShape)
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -221,7 +221,7 @@ fun ClozyConfirmDialog(
             Modifier
                 .padding(horizontal = 24.dp, vertical = 32.dp)
                 .fillMaxWidth()
-                .background(ClozyColors.White, RoundedCornerShape(24.dp))
+                .background(ClozyColors.Surface, RoundedCornerShape(24.dp))
                 .clickable(enabled = false) {}
                 .padding(24.dp),
         ) {

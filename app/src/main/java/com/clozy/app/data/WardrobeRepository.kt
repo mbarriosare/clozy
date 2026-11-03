@@ -36,10 +36,31 @@ object WardrobeRepository {
 
     private val docIds = mutableMapOf<Int, String>()
 
+    // El id de la prenda es siempre el hashCode del id de documento, igual que al cargar
+    // desde Firestore. Así los outfits siguen encontrando sus prendas después de reiniciar.
     suspend fun add(uid: String, garment: Garment): Garment {
-        val ref = collection(uid).add(garment.toMap()).await()
-        docIds[garment.id] = ref.id
-        return garment
+        val ref = collection(uid).document()
+        val saved = garment.copy(id = ref.id.hashCode())
+        ref.set(saved.toMap()).await()
+        docIds[saved.id] = ref.id
+        return saved
+    }
+
+    fun toFirestoreMap(garment: Garment): Map<String, Any?> = garment.toMap()
+
+    fun register(garment: Garment, docId: String) {
+        docIds[garment.id] = docId
+    }
+
+    fun docIdOf(garment: Garment): String? = docIds[garment.id]
+
+    // Borra del armario las prendas ya vendidas (por su id de documento). Devuelve true si borró alguna.
+    suspend fun removeByDocIds(uid: String, wanted: Collection<String>): Boolean {
+        val present = docIds.values.toSet()
+        val toDelete = wanted.filter { it in present }
+        for (id in toDelete) collection(uid).document(id).delete().await()
+        if (toDelete.isNotEmpty()) docIds.entries.removeAll { it.value in toDelete }
+        return toDelete.isNotEmpty()
     }
 
     suspend fun update(uid: String, garment: Garment) {

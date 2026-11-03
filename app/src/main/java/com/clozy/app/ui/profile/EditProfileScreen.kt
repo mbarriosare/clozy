@@ -159,7 +159,7 @@ private fun PhoneField(verifiedPhone: String?, onVerifyClick: (String) -> Unit) 
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .background(ClozyColors.White, shape)
+                    .background(ClozyColors.Surface, shape)
                     .border(1.dp, ClozyColors.TextFaint, shape)
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

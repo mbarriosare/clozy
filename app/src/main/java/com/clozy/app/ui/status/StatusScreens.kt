@@ -82,7 +82,7 @@ fun FlowLoadingScreen(
                 modifier = Modifier
                     .size(56.dp)
                     .shadow(3.dp, shape, ambientColor = Color(0x14211A1D), spotColor = Color(0x14211A1D))
-                    .background(ClozyColors.White, shape)
+                    .background(ClozyColors.Surface, shape)
                     .border(BorderStroke(1.dp, ClozyColors.TextFaint), shape),
                 contentAlignment = Alignment.Center,
             ) {

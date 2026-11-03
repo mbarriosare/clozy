@@ -8,6 +8,7 @@ data class Outfit(
     val garmentIds: List<Int>,
     val isFavorite: Boolean = false,
     val createdBy: String = "Tú",
+    val aiExplanation: String? = null,
 )
 
 val OccasionOptions = listOf("Casual", "Trabajo", "Cita", "Salida", "Evento", "Universidad", "Viaje")

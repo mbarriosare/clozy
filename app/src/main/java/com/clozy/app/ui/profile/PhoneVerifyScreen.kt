@@ -55,7 +55,7 @@ private fun CodeInput(value: String, onValueChange: (String) -> Unit, isError: B
                         Modifier
                             .weight(1f)
                             .height(52.dp)
-                            .background(if (isError) ClozyColors.ErrorSoft else ClozyColors.White, shape)
+                            .background(if (isError) ClozyColors.ErrorSoft else ClozyColors.Surface, shape)
                             .border(
                                 BorderStroke(1.111.dp, if (isError) ClozyColors.Error else ClozyColors.TextFaint),
                                 shape,

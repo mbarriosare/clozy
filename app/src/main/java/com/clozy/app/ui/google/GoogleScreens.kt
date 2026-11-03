@@ -74,7 +74,7 @@ private fun GoogleHeader() {
                 Modifier
                     .size(48.dp)
                     .shadow(2.dp, shape, ambientColor = Color(0x12211A1D), spotColor = Color(0x12211A1D))
-                    .background(ClozyColors.White, shape)
+                    .background(ClozyColors.Surface, shape)
                     .border(BorderStroke(1.111.dp, ClozyColors.TextFaint), shape),
                 contentAlignment = Alignment.Center,
             ) {
@@ -92,7 +92,7 @@ private fun AccountCard(content: @Composable () -> Unit, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .shadow(1.dp, shape, ambientColor = Color(0x0D211A1D), spotColor = Color(0x0D211A1D))
-            .background(ClozyColors.White, shape)
+            .background(ClozyColors.Surface, shape)
             .border(BorderStroke(1.111.dp, ClozyColors.TextFaint), shape)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
@@ -173,7 +173,7 @@ private fun PermissionCard(title: String, description: String) {
             .widthIn(max = 321.dp)
             .fillMaxWidth()
             .shadow(1.dp, shape, ambientColor = Color(0x0D211A1D), spotColor = Color(0x0D211A1D))
-            .background(ClozyColors.White, shape)
+            .background(ClozyColors.Surface, shape)
             .border(BorderStroke(1.111.dp, ClozyColors.TextFaint), shape)
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -251,7 +251,7 @@ private fun CodeInput(value: String, onValueChange: (String) -> Unit, isError: B
                         Modifier
                             .weight(1f)
                             .height(52.dp)
-                            .background(if (isError) ClozyColors.ErrorSoft else ClozyColors.White, shape)
+                            .background(if (isError) ClozyColors.ErrorSoft else ClozyColors.Surface, shape)
                             .border(
                                 BorderStroke(1.111.dp, if (isError) ClozyColors.Error else ClozyColors.TextFaint),
                                 shape,
@@ -295,7 +295,7 @@ fun GoogleVerifyScreen(
                     modifier = Modifier
                         .padding(top = 4.dp)
                         .fillMaxWidth()
-                        .background(ClozyColors.White, shape)
+                        .background(ClozyColors.Surface, shape)
                         .border(BorderStroke(1.111.dp, ClozyColors.TextFaint), shape)
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -346,7 +346,7 @@ private fun GoogleFailedBadge() {
             Modifier
                 .size(56.dp)
                 .shadow(3.dp, shape, ambientColor = Color(0x14211A1D), spotColor = Color(0x14211A1D))
-                .background(ClozyColors.White, shape)
+                .background(ClozyColors.Surface, shape)
                 .border(BorderStroke(1.dp, ClozyColors.TextFaint), shape),
             contentAlignment = Alignment.Center,
         ) { Image(painterResource(R.drawable.google_g), null, Modifier.size(18.dp)) }

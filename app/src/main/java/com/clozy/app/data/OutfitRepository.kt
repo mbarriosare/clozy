@@ -22,14 +22,17 @@ object OutfitRepository {
                 garmentIds = (data["garmentIds"] as? List<*>)?.mapNotNull { (it as? Long)?.toInt() } ?: emptyList(),
                 isFavorite = data["isFavorite"] as? Boolean ?: false,
                 createdBy = data["createdBy"] as? String ?: "Tú",
+                aiExplanation = data["aiExplanation"] as? String,
             ).also { docIds[it.id] = doc.id }
         }
     }
 
     suspend fun add(uid: String, outfit: Outfit): Outfit {
-        val ref = collection(uid).add(outfit.toMap()).await()
-        docIds[outfit.id] = ref.id
-        return outfit
+        val ref = collection(uid).document()
+        val saved = outfit.copy(id = ref.id.hashCode())
+        ref.set(saved.toMap()).await()
+        docIds[saved.id] = ref.id
+        return saved
     }
 
     suspend fun update(uid: String, outfit: Outfit) {
@@ -50,5 +53,6 @@ object OutfitRepository {
         "garmentIds" to garmentIds,
         "isFavorite" to isFavorite,
         "createdBy" to createdBy,
+        "aiExplanation" to aiExplanation,
     )
 }
