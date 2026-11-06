@@ -1,7 +1,7 @@
 # Clozy
 
 Clozy es una app Android para organizar tu armario digital, crear outfits con inteligencia artificial y comprar o vender prendas entre usuarios.
-> Proyecto universitario. No está pensado para uso comercial.
+
 
 ## Funcionalidades
 
