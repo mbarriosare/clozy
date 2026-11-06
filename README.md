@@ -1,7 +1,6 @@
 # Clozy
 
 Clozy es una app Android para organizar tu armario digital, crear outfits con inteligencia artificial y comprar o vender prendas entre usuarios.
-
 > Proyecto universitario. No está pensado para uso comercial.
 
 ## Funcionalidades
@@ -117,7 +116,6 @@ app/src/main/java/com/clozy/app/
 ```
 
 ## Limitaciones conocidas
-
 - El pago del mercado es una simulación, no hay cobro real.
 - La app está pensada para teléfonos y se bloquea en orientación vertical.
 - La clave de Gemini se compila dentro de la app, por lo que este proyecto no debe publicarse como producto sin moverla a un backend.
