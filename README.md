@@ -1,4 +1,4 @@
-## Instalación
+## Instalación de la aplicación
 
 ### Opción 1: instalar el APK (recomendada)
 
